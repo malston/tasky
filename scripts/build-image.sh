@@ -3,6 +3,8 @@
 # Make sure your PAT has the necessary permissions: read:packages, write:packages, and delete:packages
 # Images in GHCR are private by default. You can make them public in your GitHub package settings
 
+__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
 set -o errexit
 set -o nounset
 
@@ -19,7 +21,11 @@ PLATFORM="${PLATFORM:-linux/amd64}"
 
 echo "$GITHUB_TOKEN" | docker login "$REGISTRY" -u "$GITHUB_USERNAME" --password-stdin
 
+pushd "$__DIR/.." > /dev/null
+
 docker build --platform "$PLATFORM" -t "$REGISTRY/$GITHUB_USERNAME/$IMAGE_NAME:$DOCKER_TAG" .
 
 docker push "$REGISTRY/$GITHUB_USERNAME/$IMAGE_NAME:$DOCKER_TAG"
 docker pull "$REGISTRY/$GITHUB_USERNAME/$IMAGE_NAME:$DOCKER_TAG"
+
+popd > /dev/null
